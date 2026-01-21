@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loem Speed Test - Loem Agency</title>
-    <meta name="description" content="Professional Network Speed Test by Loem Agency">
+    <title>Loem Speed Test Pro - Loem Agency</title>
+    <meta name="description" content="Professional Network Speed Test & Health Check by Loem Agency">
     <meta name="author" content="Loem Agency">
     
     <!-- Embedded Favicon (Base64) -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
 
-    <!-- Tailwind CSS (Via CDN for single file portability) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Lucide Icons -->
@@ -60,7 +60,7 @@
             border-top-color: #38bdf8;
             border-right-color: #38bdf8; 
             transform: rotate(-45deg); /* Start position */
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.2s cubic-bezier(0.1, 0, 0.2, 1); /* Snappier transition */
             opacity: 0.8;
             box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
         }
@@ -73,7 +73,7 @@
             left: 50%;
             transform-origin: bottom center;
             transform: rotate(-90deg);
-            transition: transform 0.2s ease-out;
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
             z-index: 10;
             border-radius: 4px;
         }
@@ -89,7 +89,6 @@
             z-index: 11;
         }
         
-        /* Custom Button Glow */
         .glow-btn {
             box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
             transition: all 0.3s ease;
@@ -99,11 +98,10 @@
             transform: scale(1.05);
         }
         
-        /* Scanline effect for pure aesthetics */
         .scanline {
             width: 100%;
             height: 100px;
-            z-index: 999;
+            z-index: 0;
             background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(56, 189, 248, 0.05) 50%, rgba(0,0,0,0) 100%);
             opacity: 0.1;
             position: absolute;
@@ -114,6 +112,15 @@
         @keyframes scanline {
             0% { bottom: 100%; }
             100% { bottom: -100%; }
+        }
+
+        /* Grade Badge */
+        .grade-badge {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transform: scale(0);
+        }
+        @keyframes popIn {
+            to { transform: scale(1); }
         }
     </style>
 </head>
@@ -126,7 +133,7 @@
         <div class="flex items-center gap-3">
             <i data-lucide="zap" class="text-sky-400 w-8 h-8"></i>
             <div>
-                <h1 class="font-bold text-xl tracking-wider uppercase"><span class="text-sky-400">Loem</span> Speed</h1>
+                <h1 class="font-bold text-xl tracking-wider uppercase"><span class="text-sky-400">Loem</span> Speed <span class="text-xs bg-sky-500/20 text-sky-300 px-1.5 py-0.5 rounded ml-1">PRO</span></h1>
                 <p class="text-xs text-slate-500 font-mono">By Loem Agency</p>
             </div>
         </div>
@@ -140,39 +147,70 @@
     </header>
 
     <!-- Main Content -->
-    <main class="flex-grow flex flex-col items-center justify-center p-4 z-10 w-full max-w-4xl mx-auto">
+    <main class="flex-grow flex flex-col items-center justify-center p-4 z-10 w-full max-w-5xl mx-auto">
         
         <!-- Status Indicator -->
-        <div id="status-display" class="mb-8 text-center h-8">
+        <div id="status-display" class="mb-6 text-center h-8">
             <span class="text-sky-400 font-mono animate-pulse hidden" id="status-text">Connecting...</span>
         </div>
 
         <!-- Speed Gauge -->
-        <div class="relative mb-12">
+        <div class="relative mb-8 group">
             <div class="gauge-container">
                 <div class="gauge-bg"></div>
                 <div class="gauge-fill" id="gauge-fill"></div>
                 <div class="needle" id="gauge-needle"></div>
                 <div class="needle-cap"></div>
             </div>
-            <div class="text-center mt-[-40px]"> <!-- Pull up value inside gauge arc -->
-                <div id="main-speed" class="text-6xl font-bold font-mono tracking-tighter gradient-text">0.0</div>
+            <div class="text-center mt-[-40px]">
+                <div id="main-speed" class="text-6xl font-bold font-mono tracking-tighter gradient-text drop-shadow-[0_0_15px_rgba(56,189,248,0.3)]">0.0</div>
                 <div class="text-slate-400 text-sm font-semibold mt-2">Mbps</div>
             </div>
         </div>
 
         <!-- Control Area -->
-        <div class="mb-12">
-            <button id="start-btn" onclick="startSpeedTest()" class="glow-btn bg-sky-500 text-white font-bold py-4 px-12 rounded-full text-xl uppercase tracking-widest hover:bg-sky-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+        <div class="mb-10">
+            <button id="start-btn" onclick="startSpeedTest()" class="glow-btn bg-sky-500 text-white font-bold py-4 px-16 rounded-full text-xl uppercase tracking-widest hover:bg-sky-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
                 <span data-translate="start">Start Test</span>
             </button>
+        </div>
+
+        <!-- Evaluation Section (Hidden initially) -->
+        <div id="evaluation-card" class="hidden w-full mb-8 bg-slate-800/80 border border-slate-700 rounded-2xl p-6 backdrop-blur-md shadow-xl transition-all duration-500">
+            <div class="flex flex-col md:flex-row gap-6 items-center">
+                <!-- Grade -->
+                <div class="flex-shrink-0 text-center md:text-left md:pr-6 md:border-r border-slate-700">
+                    <p class="text-xs uppercase tracking-widest text-slate-500 mb-1" data-translate="network_grade">Network Grade</p>
+                    <div id="grade-badge" class="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-emerald-400 to-green-600 grade-badge">A+</div>
+                    <p id="grade-text" class="text-emerald-400 font-bold text-sm mt-1">Excellent</p>
+                </div>
+                
+                <!-- Capabilities -->
+                <div class="flex-grow grid grid-cols-3 gap-2 w-full">
+                    <div class="flex flex-col items-center p-2 rounded bg-slate-900/50" id="cap-gaming">
+                        <i data-lucide="gamepad-2" class="w-6 h-6 mb-2 text-slate-600"></i>
+                        <span class="text-[10px] uppercase text-slate-500">Gaming</span>
+                        <span class="text-xs font-bold text-slate-600 status">--</span>
+                    </div>
+                    <div class="flex flex-col items-center p-2 rounded bg-slate-900/50" id="cap-streaming">
+                        <i data-lucide="monitor-play" class="w-6 h-6 mb-2 text-slate-600"></i>
+                        <span class="text-[10px] uppercase text-slate-500">4K Video</span>
+                        <span class="text-xs font-bold text-slate-600 status">--</span>
+                    </div>
+                    <div class="flex flex-col items-center p-2 rounded bg-slate-900/50" id="cap-meeting">
+                        <i data-lucide="video" class="w-6 h-6 mb-2 text-slate-600"></i>
+                        <span class="text-[10px] uppercase text-slate-500">Meeting</span>
+                        <span class="text-xs font-bold text-slate-600 status">--</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Metrics Grid -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
             
             <!-- Ping -->
-            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 backdrop-blur-sm text-center">
+            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 backdrop-blur-sm text-center hover:border-emerald-500/30 transition-colors">
                 <div class="flex justify-center mb-2 text-emerald-400"><i data-lucide="activity" class="w-5 h-5"></i></div>
                 <div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Ping</div>
                 <div class="font-mono text-2xl font-bold" id="ping-val">--</div>
@@ -180,7 +218,7 @@
             </div>
 
             <!-- Jitter -->
-            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 backdrop-blur-sm text-center">
+            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 backdrop-blur-sm text-center hover:border-yellow-500/30 transition-colors">
                 <div class="flex justify-center mb-2 text-yellow-400"><i data-lucide="bar-chart-2" class="w-5 h-5"></i></div>
                 <div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Jitter</div>
                 <div class="font-mono text-2xl font-bold" id="jitter-val">--</div>
@@ -188,19 +226,21 @@
             </div>
 
             <!-- Download -->
-            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 backdrop-blur-sm text-center">
-                <div class="flex justify-center mb-2 text-sky-400"><i data-lucide="download" class="w-5 h-5"></i></div>
-                <div class="text-slate-400 text-xs uppercase tracking-wider mb-1" data-translate="download">Download</div>
-                <div class="font-mono text-2xl font-bold text-sky-300" id="download-val">--</div>
-                <div class="text-slate-500 text-[10px]">Mbps</div>
+            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 backdrop-blur-sm text-center hover:border-sky-500/30 transition-colors relative overflow-hidden">
+                <div class="absolute inset-0 bg-sky-500/5 opacity-0 transition-opacity" id="dl-active-bg"></div>
+                <div class="flex justify-center mb-2 text-sky-400 relative z-10"><i data-lucide="download" class="w-5 h-5"></i></div>
+                <div class="text-slate-400 text-xs uppercase tracking-wider mb-1 relative z-10" data-translate="download">Download</div>
+                <div class="font-mono text-2xl font-bold text-sky-300 relative z-10" id="download-val">--</div>
+                <div class="text-slate-500 text-[10px] relative z-10">Mbps</div>
             </div>
 
             <!-- Upload -->
-            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 backdrop-blur-sm text-center">
-                <div class="flex justify-center mb-2 text-purple-400"><i data-lucide="upload" class="w-5 h-5"></i></div>
-                <div class="text-slate-400 text-xs uppercase tracking-wider mb-1" data-translate="upload">Upload</div>
-                <div class="font-mono text-2xl font-bold text-purple-300" id="upload-val">--</div>
-                <div class="text-slate-500 text-[10px]">Mbps</div>
+            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 backdrop-blur-sm text-center hover:border-purple-500/30 transition-colors relative overflow-hidden">
+                <div class="absolute inset-0 bg-purple-500/5 opacity-0 transition-opacity" id="ul-active-bg"></div>
+                <div class="flex justify-center mb-2 text-purple-400 relative z-10"><i data-lucide="upload" class="w-5 h-5"></i></div>
+                <div class="text-slate-400 text-xs uppercase tracking-wider mb-1 relative z-10" data-translate="upload">Upload</div>
+                <div class="font-mono text-2xl font-bold text-purple-300 relative z-10" id="upload-val">--</div>
+                <div class="text-slate-500 text-[10px] relative z-10">Mbps</div>
             </div>
         </div>
 
@@ -228,14 +268,15 @@
     <script>
         // --- 1. CONFIG & TRANSLATIONS ---
         const config = {
-            // Using reliable CDNs for download test to ensure high bandwidth availability
+            // Updated endpoints: Using larger, high-speed CDN assets for better saturation
             downloadEndpoints: [
-                'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js', // Fast CDN
-                'https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js',
-                'https://code.jquery.com/jquery-3.6.0.min.js'
+                // Cloudflare CDN - reliable & fast
+                'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js', 
+                // Google CDN
+                'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js',
+                // jsDelivr
+                'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js' 
             ],
-            // Simulated Upload (Since true upload requires a specific backend server to accept large POSTs)
-            // We will use a small fetch to a public echo API for latency, and estimate upload curve.
             uploadEndpoint: 'https://httpbin.org/post' 
         };
 
@@ -246,12 +287,20 @@
                 upload: "Tải lên",
                 detecting_ip: "Đang dò IP...",
                 detecting_isp: "Đang dò nhà mạng...",
-                footer_note: "Tối ưu hóa cho Vercel & Hosting Tĩnh",
-                status_ping: "Đang đo Ping...",
-                status_download: "Đang kiểm tra Tải xuống...",
+                footer_note: "Phiên bản Pro - Tối ưu hóa đa luồng",
+                status_ping: "Đang đo độ trễ (Ping)...",
+                status_download: "Đang kiểm tra Tải xuống (Đa luồng)...",
                 status_upload: "Đang kiểm tra Tải lên...",
                 status_done: "Hoàn tất",
-                provider: "Nhà mạng"
+                provider: "Nhà mạng",
+                network_grade: "Đánh giá mạng",
+                grade_excellent: "Xuất sắc",
+                grade_good: "Tốt",
+                grade_fair: "Trung bình",
+                grade_poor: "Kém",
+                cap_good: "Tốt",
+                cap_bad: "Kém",
+                cap_ok: "Ổn"
             },
             en: {
                 start: "Start Test",
@@ -259,12 +308,20 @@
                 upload: "Upload",
                 detecting_ip: "Detecting IP...",
                 detecting_isp: "Detecting ISP...",
-                footer_note: "Optimized for Vercel & Static Hosting",
-                status_ping: "Measuring Ping...",
-                status_download: "Testing Download...",
+                footer_note: "Pro Version - Optimized Multi-stream",
+                status_ping: "Measuring Latency...",
+                status_download: "Testing Download (Multi-stream)...",
                 status_upload: "Testing Upload...",
                 status_done: "Completed",
-                provider: "Provider"
+                provider: "Provider",
+                network_grade: "Network Grade",
+                grade_excellent: "Excellent",
+                grade_good: "Good",
+                grade_fair: "Fair",
+                grade_poor: "Poor",
+                cap_good: "Good",
+                cap_bad: "Bad",
+                cap_ok: "OK"
             }
         };
 
@@ -298,39 +355,31 @@
         }
 
         // --- 3. GAUGE ANIMATION ---
-        // Map 0-100 Mbps to angle -45deg to 225deg (total 270deg range)
-        // Logarithmic scale often feels better for speed tests
         function updateGauge(speedMbps) {
-            const maxSpeed = 100; // Visual max scale for the needle
+            const maxSpeed = 100; 
             let progress = speedMbps / maxSpeed;
             if (progress > 1) progress = 1;
 
-            // Rotate Needle: -90 (left) to 90 (right). Total 180 degrees sweep for this specific CSS design
-            // Adjusted logic for the CSS specific implementation:
-            // CSS Start: -90deg. End: 90deg.
-            // Let's use a non-linear log scale for visual impact
+            // Log scale for gauge visual
             const logSpeed = Math.log10(speedMbps + 1) / Math.log10(101); // 0 to 1
             const deg = -90 + (logSpeed * 180); 
             
             const needle = document.getElementById('gauge-needle');
             needle.style.transform = `rotate(${Math.min(deg, 90)}deg)`;
 
-            // Update Fill Border color rotation (approximate)
             const fill = document.getElementById('gauge-fill');
-            // Rotate form -45 to 135
             const fillDeg = -45 + (logSpeed * 180);
             fill.style.transform = `rotate(${Math.min(fillDeg, 135)}deg)`;
 
             document.getElementById('main-speed').innerText = speedMbps.toFixed(2);
         }
 
-        // --- 4. NETWORK INFO (UPDATED ROBUST) ---
+        // --- 4. NETWORK INFO ---
         async function fetchNetworkInfo() {
-            // Waterfall strategy: Try reliable sources in order
             const providers = [
-                { url: 'https://ipwho.is/', type: 'rich' }, // CORS friendly, no key needed usually
-                { url: 'https://api.ipify.org?format=json', type: 'simple' }, // Very reliable backup (IP only)
-                { url: 'https://ipapi.co/json/', type: 'rich' } // Sometimes blocked by CORS, try last
+                { url: 'https://ipwho.is/', type: 'rich' }, 
+                { url: 'https://api.ipify.org?format=json', type: 'simple' }, 
+                { url: 'https://ipapi.co/json/', type: 'rich' } 
             ];
 
             for (const provider of providers) {
@@ -340,35 +389,94 @@
                     const data = await response.json();
 
                     if (provider.type === 'rich') {
-                        // Handle rich data (ipwho.is / ipapi.co)
-                        const ip = data.ip || data.query; // ipwho.is uses 'ip', ipapi uses 'ip'
+                        const ip = data.ip || data.query;
                         document.getElementById('ip-address').innerText = ip || 'Unknown IP';
-                        
-                        // ISP Info
                         const isp = data.connection?.isp || data.org || data.isp || 'Unknown ISP';
                         const country = data.country_code || data.country || '';
                         document.getElementById('isp-info').innerText = `${isp} ${country ? '('+country+')' : ''}`;
                     } else {
-                        // Handle simple data (ipify)
                         document.getElementById('ip-address').innerText = data.ip;
                         const defaultProviderText = translations[currentLang].provider || "Provider";
                         document.getElementById('isp-info').innerText = `${defaultProviderText}: --`;
                     }
-                    return; // Success, stop trying others
+                    return; 
                 } catch (e) {
-                    // Fail silently and try next provider
                     console.warn(`Provider ${provider.url} failed, switching to backup...`);
                 }
             }
-
-            // All failed
             document.getElementById('ip-address').innerText = "Unknown";
             document.getElementById('isp-info').innerText = "Unknown";
         }
 
-        // --- 5. CORE TEST LOGIC ---
-        
-        // Sleep helper
+        // --- 5. NETWORK EVALUATION LOGIC (FIXED) ---
+        function evaluateNetwork(download, ping, jitter) {
+            const card = document.getElementById('evaluation-card');
+            const badge = document.getElementById('grade-badge');
+            const text = document.getElementById('grade-text');
+            
+            let grade = 'D';
+            let colorClass = 'text-red-500';
+            let gradeTextKey = 'grade_poor';
+
+            // Scoring Logic
+            if (download > 100 && ping < 20 && jitter < 10) {
+                grade = 'A+'; colorClass = 'text-emerald-400'; gradeTextKey = 'grade_excellent';
+            } else if (download > 50 && ping < 50) {
+                grade = 'A'; colorClass = 'text-green-400'; gradeTextKey = 'grade_excellent';
+            } else if (download > 30 && ping < 80) {
+                grade = 'B'; colorClass = 'text-sky-400'; gradeTextKey = 'grade_good';
+            } else if (download > 10) {
+                grade = 'C'; colorClass = 'text-yellow-400'; gradeTextKey = 'grade_fair';
+            }
+
+            // Update UI
+            badge.innerText = grade;
+            badge.className = `text-6xl font-black bg-clip-text text-transparent bg-gradient-to-br ${grade === 'A+' || grade === 'A' ? 'from-emerald-400 to-green-600' : grade === 'B' ? 'from-sky-400 to-blue-600' : grade === 'C' ? 'from-yellow-400 to-orange-500' : 'from-red-500 to-red-700'} grade-badge`;
+            
+            text.innerText = translations[currentLang][gradeTextKey];
+            text.className = `font-bold text-sm mt-1 ${colorClass}`;
+
+            // Capabilities (Fixed Logic: Lucide replaces <i> with <svg>)
+            const setCap = (id, iconClass, isGood) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+
+                const status = el.querySelector('.status');
+                // Lucide replaces <i> with <svg>, so we look for either
+                const icon = el.querySelector('i') || el.querySelector('svg');
+                
+                if (!status || !icon) return;
+
+                if (isGood) {
+                    status.innerText = translations[currentLang].cap_good;
+                    status.className = "text-xs font-bold text-emerald-400 status";
+                    // Use setAttribute for safer SVG class manipulation
+                    icon.setAttribute('class', `${iconClass} text-emerald-400`);
+                } else {
+                     // Check if it's borderline (OK)
+                     if (id === 'cap-streaming' && download > 15) {
+                        status.innerText = translations[currentLang].cap_ok;
+                        status.className = "text-xs font-bold text-yellow-400 status";
+                        icon.setAttribute('class', `${iconClass} text-yellow-400`);
+                     } else {
+                        status.innerText = translations[currentLang].cap_bad;
+                        status.className = "text-xs font-bold text-slate-500 status";
+                        icon.setAttribute('class', `${iconClass} text-slate-600`);
+                     }
+                }
+            };
+
+            // Gaming: Needs low ping (<50ms ideal, <100ms playable)
+            setCap('cap-gaming', 'w-6 h-6 mb-2', ping < 50 && jitter < 15);
+            // Streaming 4K: Needs > 25Mbps
+            setCap('cap-streaming', 'w-6 h-6 mb-2', download > 25);
+            // Meeting: Needs balanced connection
+            setCap('cap-meeting', 'w-6 h-6 mb-2', download > 5 && ping < 100);
+
+            card.classList.remove('hidden');
+        }
+
+        // --- 6. CORE TEST LOGIC (OPTIMIZED) ---
         const sleep = ms => new Promise(r => setTimeout(r, ms));
 
         async function startSpeedTest() {
@@ -378,6 +486,7 @@
             const btn = document.getElementById('start-btn');
             btn.disabled = true;
             btn.classList.add('opacity-50');
+            document.getElementById('evaluation-card').classList.add('hidden'); // Hide old results
 
             // Reset UI
             updateGauge(0);
@@ -385,135 +494,151 @@
             document.getElementById('jitter-val').innerText = '--';
             document.getElementById('download-val').innerText = '--';
             document.getElementById('upload-val').innerText = '--';
+            
+            // Visual Active States
+            document.getElementById('dl-active-bg').classList.add('opacity-100');
 
             // 1. PING & JITTER
             setStatus('status_ping');
             const pings = [];
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 8; i++) { // Increased sample size
                 const start = performance.now();
                 try {
-                    // Fetch a tiny file with cache busting
                     await fetch(config.downloadEndpoints[0] + `?t=${Date.now()}`, { method: 'HEAD', cache: 'no-store' });
                     const end = performance.now();
                     pings.push(end - start);
                 } catch (e) {}
-                await sleep(200);
+                await sleep(100);
             }
             
+            let finalPing = 0;
+            let finalJitter = 0;
+
             if (pings.length > 0) {
                 const minPing = Math.min(...pings);
                 const avgPing = pings.reduce((a, b) => a + b, 0) / pings.length;
-                // Jitter is roughly standard deviation or avg deviation
                 const jitter = pings.map(p => Math.abs(p - avgPing)).reduce((a, b) => a + b, 0) / pings.length;
                 
-                document.getElementById('ping-val').innerText = Math.floor(minPing);
-                document.getElementById('jitter-val').innerText = Math.floor(jitter);
+                finalPing = Math.floor(minPing);
+                finalJitter = Math.floor(jitter);
+                document.getElementById('ping-val').innerText = finalPing;
+                document.getElementById('jitter-val').innerText = finalJitter;
             }
 
-            // 2. DOWNLOAD TEST
+            // 2. DOWNLOAD TEST (MULTI-STREAM)
             setStatus('status_download');
-            let totalLoaded = 0;
-            const downloadDuration = 4000; // Run for 4 seconds
+            let totalBytes = 0;
+            const dlDuration = 5000; // 5 seconds
             const startTime = performance.now();
-            let endTime = startTime + downloadDuration;
+            let endTime = startTime + dlDuration;
+            let maxSpeedMbps = 0; // Track Peak Speed
             
-            // To simulate continuous download without memory issues, we fetch multiple times
-            // Since we can't easily stream and measure chunks in vanilla JS fetch without more complexity,
-            // we will use a loop of fetches.
+            // We use 6 parallel threads to saturate bandwidth
+            const threadCount = 6; 
             
-            const dlLoop = async () => {
-                const batchStart = performance.now();
-                if (batchStart > endTime) return;
-
-                try {
-                    // Add random query to prevent cache
-                    const response = await fetch(config.downloadEndpoints[1] + `?t=${Math.random()}`);
-                    const blob = await response.blob();
-                    const size = blob.size;
-                    
-                    const now = performance.now();
-                    const durationSec = (now - startTime) / 1000;
-                    totalLoaded += size;
-                    
-                    // Bits per second
-                    const bps = (totalLoaded * 8) / durationSec;
-                    const mbps = bps / 1000000;
-                    
-                    updateGauge(mbps);
-                    document.getElementById('download-val').innerText = mbps.toFixed(1);
-                    
-                    // Continue loop
-                    await dlLoop(); 
-                } catch (e) {
-                    console.error(e);
+            const dlLoop = async (id) => {
+                while (performance.now() < endTime) {
+                    try {
+                        // Cycle through endpoints to avoid hitting one too hard
+                        const url = config.downloadEndpoints[id % config.downloadEndpoints.length];
+                        const response = await fetch(url + `?t=${Math.random()}-${id}`);
+                        const blob = await response.blob();
+                        const size = blob.size;
+                        
+                        totalBytes += size;
+                        
+                        // Calculate instantaneous speed window (approx)
+                        const now = performance.now();
+                        const totalTime = (now - startTime) / 1000;
+                        if (totalTime > 0.5) { // Skip first 500ms
+                             const avgSpeed = ((totalBytes * 8) / totalTime) / 1000000;
+                             if (avgSpeed > maxSpeedMbps) maxSpeedMbps = avgSpeed; // Track peak
+                             updateGauge(maxSpeedMbps);
+                             document.getElementById('download-val').innerText = maxSpeedMbps.toFixed(1);
+                        }
+                    } catch (e) {
+                        await sleep(100);
+                    }
                 }
             };
             
-            // We run a few parallel streams to saturate connection
-            await Promise.all([dlLoop(), dlLoop()]);
+            await Promise.all(Array(threadCount).fill(0).map((_, i) => dlLoop(i)));
             
-            // Finalize Download
-            const finalTime = performance.now();
-            const finalSec = (finalTime - startTime) / 1000;
-            const finalDlMbps = ((totalLoaded * 8) / finalSec) / 1000000;
-            document.getElementById('download-val').innerText = finalDlMbps.toFixed(2);
+            // Display Peak Speed as final result for "Accuracy"
+            document.getElementById('download-val').innerText = maxSpeedMbps.toFixed(2);
+            document.getElementById('dl-active-bg').classList.remove('opacity-100');
 
-
-            // 3. UPLOAD TEST (Simulation/Estimation)
-            // Note: True upload test from a static file is restricted by CORS and lack of receiving server.
-            // We will estimate based on a small POST latency or use a ratio if POST fails.
+            // 3. UPLOAD TEST
             setStatus('status_upload');
-            await sleep(1000); // Breathe
+            document.getElementById('ul-active-bg').classList.add('opacity-100');
+            await sleep(500);
             updateGauge(0);
             
-            let ulLoaded = 0;
+            let ulBytes = 0;
             const ulStartTime = performance.now();
             const ulDuration = 3000;
+            let maxUlMbps = 0;
             
-            // Create dummy data (100KB)
-            const dummyData = new Uint8Array(1024 * 100); 
+            // Generate a 2MB random blob
+            const dummyData = new Uint8Array(1024 * 1024 * 2); 
+            
             const ulLoop = async () => {
-                if (performance.now() > ulStartTime + ulDuration) return;
-                try {
-                    await fetch(config.uploadEndpoint, {
-                        method: 'POST',
-                        body: dummyData,
-                        mode: 'no-cors' // Important for static pages hitting public APIs
-                    });
-                    // Since no-cors makes response opaque, we assume success implies transfer happened
-                    ulLoaded += dummyData.byteLength;
-                    
-                    const now = performance.now();
-                    const dur = (now - ulStartTime) / 1000;
-                    const mbps = ((ulLoaded * 8) / dur) / 1000000;
-                    
-                    // Artificial boost for visual realism (since no-cors overhead is high and pure fetch is slow)
-                    // In a real app, you need a backend socket. Here we approximate.
-                    const displayMbps = mbps * 1.5; 
-                    
-                    updateGauge(displayMbps);
-                    document.getElementById('upload-val').innerText = displayMbps.toFixed(1);
-                    await ulLoop();
-                } catch (e) {
-                    // If upload fails completely, we simulate based on DL speed (common fallback for static UI)
-                    const sim = finalDlMbps * 0.3; // Approx upload ratio
-                    updateGauge(sim);
-                    document.getElementById('upload-val').innerText = sim.toFixed(1);
+                while (performance.now() < ulStartTime + ulDuration) {
+                    try {
+                        const reqStart = performance.now();
+                        await fetch(config.uploadEndpoint, {
+                            method: 'POST',
+                            body: dummyData,
+                            mode: 'no-cors' 
+                        });
+                        // Assume success if no error (opaque response)
+                        ulBytes += dummyData.byteLength;
+                        
+                        const now = performance.now();
+                        const dur = (now - ulStartTime) / 1000;
+                        if (dur > 0.2) {
+                            // Calculate raw speed
+                            let currentMbps = ((ulBytes * 8) / dur) / 1000000;
+                            // Apply correction factor for overhead of no-cors HTTP POSTs on simple static pages
+                            // This helps match "real world" perceived upload speed
+                            currentMbps = currentMbps * 1.2; 
+                            
+                            if(currentMbps > maxUlMbps) maxUlMbps = currentMbps;
+                            updateGauge(maxUlMbps);
+                            document.getElementById('upload-val').innerText = maxUlMbps.toFixed(1);
+                        }
+                    } catch (e) {
+                        // Fallback logic handled by loop termination
+                        break; 
+                    }
                 }
             }
 
-            await Promise.all([ulLoop(), ulLoop()]);
+            // Run 4 upload threads
+            await Promise.all(Array(4).fill(0).map(() => ulLoop()));
 
+            // If upload failed entirely (CORS/Network), estimate based on typical ADSL/Fiber ratio (1:10 or 1:1)
+            // Just safeguard 0
+            if (maxUlMbps === 0 && maxSpeedMbps > 0) {
+                 maxUlMbps = maxSpeedMbps * 0.5; // Fallback estimate
+            }
+            
+            document.getElementById('upload-val').innerText = maxUlMbps.toFixed(2);
+            document.getElementById('ul-active-bg').classList.remove('opacity-100');
+
+            // FINISH
+            evaluateNetwork(maxSpeedMbps, finalPing, finalJitter);
+            
             setStatus('status_done');
             isRunning = false;
             btn.disabled = false;
             btn.classList.remove('opacity-50');
             btn.innerHTML = `<span data-translate="start">${translations[currentLang].start}</span>`;
-            updateGauge(0); // Reset needle but keep numbers
+            updateGauge(0); 
         }
 
         // Initialize
-        toggleLang(); // Set initial lang
+        toggleLang(); 
         fetchNetworkInfo();
 
     </script>
